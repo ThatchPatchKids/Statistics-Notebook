@@ -10,7 +10,8 @@ This page, and all pages of this notebook, are meant to be customized to become 
 
 <div style="font-size:.8em;"><!-- Code to shrink font-size of following paragraph -->
 
-To begin customizing, [download](https://github.com/saundersg/Statistics-Notebook) your own copy of the book <span style="font-size:.8em;">(if you haven't already)</span>. Please note the [GNU General Public License](https://choosealicense.com/licenses/gpl-3.0/) when downloading. You are free to delete this commentary in your own copy of the notebook.
+<!-- To begin customizing, [download](https://github.com/saundersg/Statistics-Notebook) your own copy of the book <span style="font-size:.8em;">(if you haven't already)</span>. Please note the [GNU General Public License](https://choosealicense.com/licenses/gpl-3.0/) when downloading. You are free to delete this commentary in your own copy of the notebook. -->
+
 
 </div><!-- Ends smaller font-size section -->
 
@@ -32,14 +33,43 @@ To begin customizing, [download](https://github.com/saundersg/Statistics-Noteboo
 
 <!-- This is a great place to add general notes, then "Knit" the file to have your notes show up in your Statistics-Notebook. --------------- -->
 
+My Notes start here,
+
+GOOD GRAPHICS:
+color choices: "steelblue", "steelblue1", "steelblue2", "steelblue3", "orangered", "orange", 
+
+How to have different colors for each box in a boxplot?
+  e.g. col=c("steelblue1", "steelblue2",                 "steelblue3", "steelblue3", "steelblue2")
+  e.g. prepare a vector with the specific colors you want: 
+  myColors <- ifelse(levels(data\$names) == "Specific Name 1", rgb(0.1, 0.1, 0.7, 0.5), ifelse(levels(data$names) == "Specific Name 2", rgb(0.8, 0.1, 0.3, 0.6), "grey90"))
+    This code filters through names in the           dataset. If a name is equal to 'Specific Name     1', it assigns the color blue with 50%           transparency (0.5). If the name is equal to      'Specific Name 2', it assigns the color red      with 60% transparency (0.6). Otherwise, any      other name is assigned the color 'grey90'.
+  e.g. boxplot(data\$names1 ~ data\$names2, data=data, col=factor(data$names2)) This is used to generate a factor variable based on number of stuff in names2 in the dataset. This factor variable will assign different colors to the boxes based on the levels of the number of stuff in names2. Each unique value in names2 will be assigned a different color in the boxplot.
+  
+  factor() automatically generates a set of unique levels for that variable and assigns each level a different color. Run levels(factor(data$names)) to check the colors assigned to each level. 
+  Use the function palette() to check the default color palette in your R environment. To change the default palette use:
+  palette("Set1") where "Set1" is a predefined palette. These palettes should exist: "Set1", "Set2", "Set3", "Dark2", "Paired", "Viridis", "Plasma", etc. 
+  How to create a custom color palette and then set it as your R    environments default palette? 
+      my_custom_palette <- c("red", "blue", "green", "orange",                                 "purple") 
+      palette(my_custom_palette)
+      
+  Use palette("default") to revert back to the default palette.
+  
+  How do you inspect the predefined palettes?
+    install.packages("RColorBrewer") 
+    library(RColorBrewer)
+    display.brewer.all() to see all the available predefined          palettes.
+    You can then set your desired palette with                        palette(paletteName)    
 
 
 
-Wow! I typed some words. Some <span style="color:blue;">blue words</span>, some <span style="background-color:yellow;">highlighted words</span>, some <span style="font-size:2em;">big words</span>.
+Keyboard Shortcuts for R Studio:
+"ctrl + L" to clear the terminal.
+
+<!-- Wow! I typed some words. Some <span style="color:blue;">blue words</span>, some <span style="background-color:yellow;">highlighted words</span>, some <span style="font-size:2em;">big words</span>.
 
 Make a link to a meaningful page of the Statistics-Notebook: [Customization Help](RMarkdownHints.html) <- Read through this page!
 
-Or to a page on the internet: [R Colors](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf)
+Or to a page on the internet: [R Colors](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf) -->
 
 
 

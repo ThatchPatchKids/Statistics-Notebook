@@ -13,7 +13,7 @@
 
 <title>Statistics Notebook</title>
 
-<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cerulean.min.css" rel="stylesheet" />
@@ -87,11 +87,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 code span.al { color: #ef2929; } /* Alert */
 code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #c4a000; } /* Attribute */
+code span.at { color: #204a87; } /* Attribute */
 code span.bn { color: #0000cf; } /* BaseN */
 code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
 code span.ch { color: #4e9a06; } /* Char */
-code span.cn { color: #000000; } /* Constant */
+code span.cn { color: #8f5902; } /* Constant */
 code span.co { color: #8f5902; font-style: italic; } /* Comment */
 code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
 code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
@@ -100,14 +100,14 @@ code span.dv { color: #0000cf; } /* DecVal */
 code span.er { color: #a40000; font-weight: bold; } /* Error */
 code span.ex { } /* Extension */
 code span.fl { color: #0000cf; } /* Float */
-code span.fu { color: #000000; } /* Function */
+code span.fu { color: #204a87; font-weight: bold; } /* Function */
 code span.im { } /* Import */
 code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
 code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
 code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
 code span.ot { color: #8f5902; } /* Other */
 code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
-code span.sc { color: #000000; } /* SpecialChar */
+code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
 code span.ss { color: #4e9a06; } /* SpecialString */
 code span.st { color: #4e9a06; } /* String */
 code span.va { color: #000000; } /* Variable */
@@ -122,13 +122,20 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -224,11 +231,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -257,8 +268,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -266,16 +277,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -473,13 +477,7 @@ to become a useful <em>Guide to Statistical Analysis</em> in R for your
 <em>current</em> and <em>future</em> self.</p>
 <div style="font-size:.8em;">
 <!-- Code to shrink font-size of following paragraph -->
-<p>To begin customizing, <a
-href="https://github.com/saundersg/Statistics-Notebook">download</a>
-your own copy of the book <span style="font-size:.8em;">(if you haven’t
-already)</span>. Please note the <a
-href="https://choosealicense.com/licenses/gpl-3.0/">GNU General Public
-License</a> when downloading. You are free to delete this commentary in
-your own copy of the notebook.</p>
+<!-- To begin customizing, [download](https://github.com/saundersg/Statistics-Notebook) your own copy of the book <span style="font-size:.8em;">(if you haven't already)</span>. Please note the [GNU General Public License](https://choosealicense.com/licenses/gpl-3.0/) when downloading. You are free to delete this commentary in your own copy of the notebook. -->
 </div>
 <!-- Ends smaller font-size section -->
 </div>
@@ -497,16 +495,46 @@ your own copy of the notebook.</p>
 <div id="show-notes" class="section level3">
 <h3>Show Notes</h3>
 <!-- This is a great place to add general notes, then "Knit" the file to have your notes show up in your Statistics-Notebook. --------------- -->
-<p>Wow! I typed some words. Some <span style="color:blue;">blue
-words</span>, some <span style="background-color:yellow;">highlighted
-words</span>, some <span style="font-size:2em;">big words</span>.</p>
-<p>Make a link to a meaningful page of the Statistics-Notebook: <a
-href="RMarkdownHints.html">Customization Help</a> &lt;- Read through
-this page!</p>
-<p>Or to a page on the internet: <a
-href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf">R
-Colors</a></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(airquality<span class="sc">$</span>Temp)</span></code></pre></div>
+<p>My Notes start here: color choices: “steelblue”, “steelblue1”,
+“steelblue2”, “steelblue3”,</p>
+<p>How to have different colors for each box in a boxplot?
+e.g. col=c(“steelblue1”, “steelblue2”, “steelblue3”, “steelblue3”,
+“steelblue2”) e.g. prepare a vector with the specific colors you want:
+myColors &lt;- ifelse(levels(data$names) == “Specific Name 1”, rgb(0.1,
+0.1, 0.7, 0.5), ifelse(levels(data<span class="math inline">\(names) ==
+&quot;Specific Name 2&quot;, rgb(0.8, 0.1, 0.3, 0.6),
+&quot;grey90&quot;))  This code filters through names in the dataset. If
+a name is equal to &#39;Specific Name 1&#39;, it assigns the color blue
+with 50% transparency (0.5). If the name is equal to &#39;Specific Name
+2&#39;, it assigns the color red with 60% transparency (0.6). Otherwise,
+any other name is assigned the color &#39;grey90&#39;.  e.g.
+boxplot(data\$names1 ~ data\$names2, data=data,
+col=factor(data\)</span>names2)) This is used to generate a factor
+variable based on number of stuff in names2 in the dataset. This factor
+variable will assign different colors to the boxes based on the levels
+of the number of stuff in names2. Each unique value in names2 will be
+assigned a different color in the boxplot.</p>
+<p>factor() automatically generates a set of unique levels for that
+variable and assigns each level a different color. Run
+levels(factor(data$names)) to check the colors assigned to each level.
+Use the function palette() to check the default color palette in your R
+environment. To change the default palette use: palette(“Set1”) where
+“Set1” is a predefined palette. These palettes should exist: “Set1”,
+“Set2”, “Set3”, “Dark2”, “Paired”, “Viridis”, “Plasma”, etc. How to
+create a custom color palette and then set it as your R environments
+default palette? my_custom_palette &lt;- c(“red”, “blue”, “green”,
+“orange”, “purple”) palette(my_custom_palette)</p>
+<p>Use palette(“default”) to revert back to the default palette.</p>
+<p>How do you inspect the predefined palettes?
+install.packages(“RColorBrewer”) library(RColorBrewer)
+display.brewer.all() to see all the available predefined palettes. You
+can then set your desired palette with palette(paletteName)</p>
+<!-- Wow! I typed some words. Some <span style="color:blue;">blue words</span>, some <span style="background-color:yellow;">highlighted words</span>, some <span style="font-size:2em;">big words</span>.
+
+Make a link to a meaningful page of the Statistics-Notebook: [Customization Help](RMarkdownHints.html) <- Read through this page!
+
+Or to a page on the internet: [R Colors](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf) -->
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">mean</span>(airquality<span class="sc">$</span>Temp)</span></code></pre></div>
 <pre><code>## [1] 77.88235</code></pre>
 <!-- End your notes before here. ------------------------------------- -->
 </div>

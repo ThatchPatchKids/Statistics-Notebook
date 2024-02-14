@@ -53,6 +53,7 @@ datatable(Rent, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
 ```{r}
 # Use this R-chunk to...
 # ...Create an interesting graphic using the Rent data set.
+hist(Rent$Price, xlab = "Price of Rent", main = "Rent Histogram")
 
 
 ```
@@ -60,7 +61,7 @@ datatable(Rent, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
 
 <!-- Write a few statements here that explain your graphic and what it shows. -->
 
-...delete this and type here...
+This histogram shows a normal distribution with one extreme outlier in the 1600-1700 range.
 
 
 
@@ -68,18 +69,18 @@ datatable(Rent, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
 ```{r}
 # Use this R-chunk to...
 # ...compute and display a meaningful table of numerical summaries supporting your above graphic.
-
+favstats(Rent$Price)
 
 ```
 
 <!-- Write a few statements here that introduce your table of numerical summaries and what they show. -->
 
-...delete this and type here...
+The mean appears to be larger than the median which could suggest that their could be some outliers to the right of the histogram.
 
 
 ## Conclusion
 
-...delete this and type an interesting final conclusion about what your graphic and numerical summaries show...
+Reject the null. 
 
 
 

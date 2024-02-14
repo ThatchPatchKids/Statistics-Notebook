@@ -11,6 +11,7 @@ library(tidyverse)
 library(DT)
 library(pander)
 library(readr)
+library(car)
 
 HSS <- read_csv("../../Data/HighSchoolSeniors.csv")
 #Remember: select "Session, Set Working Directory, To Source File Location", and then play this R-chunk into your console to read the HSS data into R. 
@@ -37,11 +38,66 @@ HSS <- HSS %>%
 
 -->
 
+## Background
+
+Males vs Females, who has the fastest reaction time?
+
+We looked at study done to measure High School Senior Tennis Players to measure their reaction time.
+
+Hers a link to the study: https://ww2.amstat.org/education/cas/2.cfm
+
+$$
+  H_0: \mu_\text{ Female Group} = \mu_\text{ Male Group}
+$$
+$$ 
+  H_a: \mu_\text{ Female Group} \neq \mu_\text{ Male Group}
+$$
+$$\alpha = 0.1$$
+
+## Analysis
+
+
+```{r}
+# Ctrl + shift + c to comment out code.
+
+# Filter out Tennis players from the HSS data set.
+HSSTennisPlayers <- filter(HSS, Favourite_physical_activity == "Tennis")
+
+# Do a t-test comparing Reaction time and Gender of HSS tennis players.
+t.test(Reaction_time ~ Gender, data = HSSTennisPlayers, mu=0, alternative="two.sided", conf.level=0.95) %>%
+  pander()
+```
 
 
 
+## {.tabset .tabset-pills}
+
+### Hide
+
+### Show
+
+```{r}
+# Diagnostic Check:
+qqPlot(Reaction_time ~ Gender, data = HSSTennisPlayers, ylab="Reaction Time", xlab="Quantities?")
+
+# Graphical Summary:
+# Do a boxplot here.
 
 
+# Filter out the home internet access types, broadband connection and dial-up connection.
+# InternetAccess <- filter(HSS, Home_Internet_Access == "Yes - broadband connection" |         
+                          # Home_Internet_Access == "Yes - dial-up connection")
+
+# Do a t-test:
+# t.test()
+
+# Graphical Summary:
+
+```
+
+
+
+## Conclusion
 
 
 
