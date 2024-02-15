@@ -132,8 +132,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
-
+[One Sample t Test](tTests.html#one-sample-t-test)
 
 
 
@@ -202,7 +201,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-
+[Independent Samples t Test](tTests.html#independent-samples-t-test)
 
 
 
@@ -262,7 +261,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[One-way ANOVA](ANOVA.html#one-way-anova)
 
 
 
@@ -318,7 +317,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[Two-way ANOVA](ANOVA.html#two-way-anova)
 
 
 
@@ -366,7 +365,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[Simple Linear Regression](LinearRegression.html#simple-linear-regression)
 
 
 
@@ -413,7 +412,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[Multiple Linear Regression](LinearRegression.html#multiple-linear-regression)
 
 
 
@@ -458,7 +457,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[Simple Logistic Regression Model](LogisticRegression.html#simple-logistic-regression-model)
 
 
 
@@ -503,7 +502,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[Multiple Logistic Regression Model](LogisticRegression.html#multiple-logistic-regression-model)
 
 
 
@@ -547,7 +546,7 @@ Add your own notes about graphics to use for this type of data here.
 <div style="padding-left:125px;color:lightgray;">
 <!-- Add your customizations in the area below: -->
 
-Add your own notes about appropriate inferential procedures for this type of data here.
+[Chi-squared Test of Independence](ChiSquaredTests.html#chi-squared-test-of-independence)
 
 
 
