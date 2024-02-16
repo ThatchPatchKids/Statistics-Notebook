@@ -69,7 +69,8 @@ This histogram shows a normal distribution with one extreme outlier in the 1600-
 ```{r}
 # Use this R-chunk to...
 # ...compute and display a meaningful table of numerical summaries supporting your above graphic.
-favstats(Rent$Price)
+favstats(Rent$Price)%>% 
+  pander()
 
 ```
 
@@ -80,7 +81,7 @@ The mean appears to be larger than the median which could suggest that their cou
 
 ## Conclusion
 
-Reject the null. 
+Rent ranges from 800-1800.
 
 
 

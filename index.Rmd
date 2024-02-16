@@ -65,6 +65,8 @@ How to have different colors for each box in a boxplot?
 Keyboard Shortcuts for R Studio:
 "ctrl + L" to clear the terminal.
 
+Dependent vs Independent data? I need to take notes on when to use each of the tests in the Notebook and rigorously quiz myself on it. 
+
 <!-- Wow! I typed some words. Some <span style="color:blue;">blue words</span>, some <span style="background-color:yellow;">highlighted words</span>, some <span style="font-size:2em;">big words</span>.
 
 Make a link to a meaningful page of the Statistics-Notebook: [Customization Help](RMarkdownHints.html) <- Read through this page!
