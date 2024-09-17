@@ -44,6 +44,8 @@ navbar:
           href: ./Analyses/StudentHousing.html
         - text: "Poor Example Analysis"
           href: ./Analyses/StudentHousingPOOR.html
+        - text: "Peer Feedback for Good Example Analysis"
+          href: ./Analyses/IntroPeerReviewingSummary.html
         - text: "Rent"
           href: ./Analyses/Rent.html
         - text: "Stephanie"
@@ -60,6 +62,8 @@ navbar:
           href: ./Analyses/Linear Regression/MySimpleLinearRegression.html
         - text: "Car Prices"
           href: ./Analyses/Linear Regression/CarPrices.html
+        - text: "Weather"
+          href: ./Analyses/Linear Regression/weather.html
         - text: "My Logistic Regression"
           href: ./Analyses/Logistic Regression/MyLogisticRegression.html
         - text: "My Chi-sqaured Test"

@@ -7,7 +7,7 @@ output:
     toc: true
     toc_float: true
 ---
-
+<!-- theme: journal, flatly. gaml markdown language? -->
 <!-- Welcome to the first Analysis for Math 325! 
 The goal of this first assignment is to have you produce a graphical summary and a numerical summary of the "Rent" data set. The fun part is that you get to decide what type of graph and what type of numerical summary to create! You will need to read through the "green text" instructions of this document to find the places where you are supposed to enter R-code in order to complete the assignment. -->
 
@@ -21,6 +21,7 @@ library(mosaic)
 library(pander)
 library(tidyverse)
 library(DT) 
+library(leaflet)
 
 # This read_csv command reads in the "Rent" data set into an object called "Rent"
 Rent <- read_csv("../Data/Rent.csv")
@@ -53,15 +54,38 @@ datatable(Rent, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
 ```{r}
 # Use this R-chunk to...
 # ...Create an interesting graphic using the Rent data set.
+# Create a map for Rexburg apartments...
 
-
+# Create popups for the maps markers.
+    popups <- lapply(
+      seq_len(nrow(Rent)), function(i_row) {
+        htmltools::HTML(paste0(
+          "<b>", Rent$Name[i_row], "</b><br/>",
+          "<a href='", Rent$WebAddress[i_row], "' target='_blank'>Website</a><br/>",
+          Rent$Phone[i_row]
+        )) 
+      })
+    
+    # Create our map object.
+    Rexburg <- leaflet(data=Rent) %>% 
+      addTiles() %>% 
+      addMarkers(
+        ~Longitude, ~Latitude,
+        popup = popups
+      ) %>% 
+      # Add a main title.
+      addControl(
+        html = "<h1>Rexburg, Idaho</h1>",
+        position = "topright"
+      )
+    # Display our map.
+    Rexburg
 ```
 
 
 <!-- Write a few statements here that explain your graphic and what it shows. -->
 
-...delete this and type here...
-
+This is a map of all approved student housing in Rexburg Idaho. Click on a marker to see the locations name, website, and phone number.
 
 
 
@@ -69,17 +93,27 @@ datatable(Rent, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
 # Use this R-chunk to...
 # ...compute and display a meaningful table of numerical summaries supporting your above graphic.
 
+# Compare the Average price of apartments less than 500m from campus to ones 500m or greater.
+Rent %>% 
+  group_by(CrowFlyMetersToMC<500) %>% 
+  summarise(mean(AvgFloorPlanCost)) %>% 
+  pander()
+```
+How many apartments are less than 500m from campus?
 
+```{r}
+table(Rent$CrowFlyMetersToMC<500) %>% 
+  pander()
 ```
 
 <!-- Write a few statements here that introduce your table of numerical summaries and what they show. -->
 
-...delete this and type here...
+
 
 
 ## Conclusion
 
-...delete this and type an interesting final conclusion about what your graphic and numerical summaries show...
+In conclusion, deciding to live in an apartment closer to campus is a feasable option when on a budget. The average cost of apartments less than 500 Meters from campus is less than the average cost of apartments 500 meters or further from campus ($1184 < \$1379).
 
 
 

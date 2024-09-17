@@ -8,9 +8,11 @@ output:
 
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(mosaic)
 library(DT)
 library(pander)
 library(readr)
+library(car)
 
 HSS <- read_csv("../../Data/HighSchoolSeniors.csv")
 #If this code does not work: 
@@ -45,10 +47,251 @@ HSS <- HSS %>%
 -->
 
 
+### Background
+
+Sleep experts such as Matthew Walker, author of Why We Sleep, suggests that we should adhere to a daily sleep schedule. He claims, "Going to bed late one night and early the next throws your circadian rhythm off balance. Attempting to catch-up on missed sleep (sleep deficit) over the weekend may not always be effective and can result in physical and mental fatigue". Thus, we should go to sleep and wake up at the same time on the weekend as we do during the week. Note, we are not testing the veracity of these claims about sleep but instead are looking at the sleep patterns of High School Students. A study was done on High School Students where each were given a survery and asked to answer several questions. The questions of interest for this study are, questions 26 (average hours of sleep on a school night) and 27 (average hours of sleep on a non-school night), see the survery here if interested: 
+<br/>[U.S. Census at School Questionnaire](https://ww2.amstat.org/censusatschool/pdfs/C@SQuestionnaire.pdf). 
+
+<br/>
+
+There are several points of interest here. One, we want to look at the difference in hours of sleep on the weekend and during the week. We have separated boys from girls and will do a paired samples t Test for both groups. We've done this because we consider the possibility that if such a difference exists, then the way to handle the underlying problems may be different for both groups, boys and girls (the underlying problems may also not be the same). And, if that would be the case, we don't want to assume a difference exists in both groups if there only exists a difference in one, so we will not consider both groups together. But, if a difference is detected we will compare both groups differences with an independent samples t Test to see if the groups differ drastically from each other or not. 
 
 
+```{r}
+# Filter and display the data...
+
+# First, clean the data. Get rid of missing and unlikely values
+HSS_Clean <- HSS[!is.na(HSS$Sleep_Hours_Schoolnight) & !is.na(HSS$Sleep_Hours_Non_Schoolnight) & 
+                   HSS$Sleep_Hours_Schoolnight <= 24 & HSS$Sleep_Hours_Non_Schoolnight <= 24, ]
+
+# Separate the Males and the Females
+HSS.Males   <- filter(HSS_Clean, Gender == "Male")
+HSS.Females <- filter(HSS_Clean, Gender == "Female")
+
+# The difference in hours of sleep, weekends - weekdays, for Males and Females
+Sleep.Dif.Males   <- HSS.Males$Sleep_Hours_Non_Schoolnight   - HSS.Males$Sleep_Hours_Schoolnight
+Sleep.Dif.Females <- HSS.Females$Sleep_Hours_Non_Schoolnight - HSS.Females$Sleep_Hours_Schoolnight
+```
 
 
+Here's the High School Boy's Sleep Data...
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Hide Data
+
+## Show Data
+
+```{r}
+# Display the Males data set
+datatable(HSS.Males[,c("Sleep_Hours_Schoolnight", "Sleep_Hours_Non_Schoolnight")],
+          options = list(lengthMenu = c(5, 10, 25)))
+```
+
+#
 
 
+Here's the High School Girl's Sleep Data...
 
+# {.tabset .tabset-fade .tabset-pills}
+
+## Hide Data
+
+## Show Data
+
+```{r}
+# Display the Females data set
+datatable(HSS.Females[,c("Sleep_Hours_Schoolnight", "Sleep_Hours_Non_Schoolnight")],
+          options = list(lengthMenu = c(5, 10, 25)))
+```
+
+# 
+
+Formally, our null and alternative hypotheses for our first test. Notice we are subtracting weekdays from weekends, we assume already that students sleep more on weekends thus, a negative difference would suggest more sleep during the week rather than weekends.
+
+$$
+  H_0: \mu_\text{difference in hours of sleep (weekend - weekdays)} = 0
+$$
+$$
+  H_a: \mu_\text{difference in hours of sleep (weekend - weekdays)} \neq 0
+$$
+
+Formally, the null and alternative hypotheses for our second test. 
+
+$$
+  H_0: \mu_\text{difference in sleep boys} - \mu_\text{difference in sleep girls} = 0
+$$
+$$
+  H_a: \mu_\text{difference in sleep boys} - \mu_\text{difference in sleep girls} \neq 0
+$$
+
+The significance level for this study will be the same for all tests.
+
+$$
+  \alpha = 0.05
+$$
+
+
+#### Analysis
+
+All missing values were filtered out of the two data sets as well as any unlikely values (sleepHours > 24 was considered unlikely). 
+The histograms of the differences for each group below suggest that a positive difference exists. In other words, boys and girls sleep more on weekends than on weekdays suggesting an inconsistent sleep schedule. Both histograms have a line at the 0 (no difference) value, everything above is a positive difference, everything below is a negative difference.
+
+```{r}
+# Display the two histograms
+
+# Define the bin sizes...
+numBreaks <- seq(min(Sleep.Dif.Males), max(Sleep.Dif.Males), length.out = 16)
+# Create the histograms for male sleep differences...
+hist(Sleep.Dif.Males, breaks = numBreaks, col = "skyblue", xlab = "Difference in Hours of Sleep (Weekend - Weekdays)",
+     ylab = "Number of Boys", main = "High School Boys Sleep More on Weekends")
+# Add a line at x = 0...
+abline(v = 0, col = "red", lwd = 2)
+# Display the males summary statistics...
+favstats(Sleep.Dif.Males) %>% 
+  pander(caption = "Summary Statistics for Males Sleep Differences")
+
+# Define the bin sizes...
+numBreaks <- seq(min(Sleep.Dif.Females), max(Sleep.Dif.Females), length.out = 16)
+# Create the histograms for female sleep differences...
+hist(Sleep.Dif.Females, breaks = numBreaks, col = "pink", xlab = "Difference in Hours of Sleep (Weekend - Weekdays)",
+     ylab = "Number of Girls", main = "High School Girls Sleep More on Weekends")
+# Add a line at x = 0...
+abline(v = 0, col = "black", lwd = 2)
+# Display the females summary statistics...
+favstats(Sleep.Dif.Females) %>% 
+  pander(caption = "Summary Statistics for Females Sleep Differences")
+```
+
+
+The first quartile for both groups is a positive difference of 1 hour of sleep. This suggests that 75% of both groups observations are positive differences meaning both groups of high school students sleep more on weekends. We will formally test this with a paired samples t test below. 
+
+<br/>
+
+```{r}
+# Testing our first hypotheses (Perform a Paired Samples t Test):
+
+# Test for Males...
+pander(t.test(Sleep.Dif.Males, mu = 0, alternative = "two.sided", conf.level = 0.95), 
+       caption = "Paired t Test: High School Boys Hours of Sleep (Weekend - Weekdays)")
+
+# Test for Females...
+pander(t.test(Sleep.Dif.Females, mu = 0, alternative = "two.sided", conf.level = 0.95), 
+       caption = "Paired t Test: High School Girls Hours of Sleep (Weekend - Weekdays)")
+```
+
+<br/>
+
+```{r}
+# Testing our second hypotheses (Perform an Independent samples t Test):
+pander(t.test(Sleep.Dif.Males, Sleep.Dif.Females, mu = 0, alternative = "two.sided", conf.level = 0.95),
+       caption = "Independent Samples t Test of Sleep Differences (Weekend - Weekdays) Between Boys and Girls")
+```
+
+
+The Q-Q Plots below indicate that our normality assumption is drastically violated for both groups however, the sample sizes are sufficiently large (nBoys = 217, nGirls = 195) therefore, the Central Limit Theorem states that our sampling distribution of the mean of the differences for each group will always be normally distributed. Thus,
+our p-values are still trustworthy. 
+
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Hide Q-Q Plots
+
+## Show Q-Q Plots
+
+```{r}
+# Display qqPlots to test both tests normality assumptions...
+
+# qqPlot for males
+qqPlot(Sleep.Dif.Males)
+
+# qqplot for females
+qqPlot(Sleep.Dif.Females)
+```
+
+#
+
+<br/>
+
+#### Interpretation
+
+Although the normality assumption required for a t Test was violated, we argue that this doesn't mean that a difference does not exist. The results of our test clearly show a difference between hours of sleep high school students are getting on weekends vs. weekdays and that there doesn't appear to be a significant difference between boys and girls sleep differences. During this study, another question was raised, and thats whether, despite the inconsistent sleep schedules, are high school students as a whole getting enough hours of sleep? We decided to look at this using our data. The graphic below shows the spread of the data for all high school students (boys and girls) avg. hours of sleep on weekends compared to weekdays. The line through both boxplots is at the 8 hours mark. Note, we are assuming 8 hours of sleep is the correct amount of sleep subjects should get, this is based on popular opinion and we are not testing the veracity of it. 
+
+
+```{r}
+# Graphical Summary for weekdays vs weekends
+
+# Create a side-by-side boxplot 
+boxplot(HSS_Clean$Sleep_Hours_Non_Schoolnight, HSS_Clean$Sleep_Hours_Schoolnight,
+        names = c("Weekends", "Weekdays"), xlab = "Hours of Sleep",
+        main = "High School Students Get Less Than 8 Hours on Weekdays",
+        col = c("lightblue", "lightgreen"), horizontal = TRUE)
+
+# Add a line at 8 hours of sleep
+abline(v = 8, col = "black")
+# Add 8 to the x-axis
+axis(side = 1, at = c(0, 5, 8, 10, 15), labels = c("0", "5", "8", "10", "15"))
+
+# Numerical Summary for Weekends
+favstats(HSS_Clean$Sleep_Hours_Non_Schoolnight) %>% 
+  pander("Summary Statistics for Hours of Sleep on Weekend")
+
+# Numerical Summary for Weekdays
+favstats(HSS_Clean$Sleep_Hours_Schoolnight) %>% 
+  pander("Summary Statistics for Hours of Sleep on Weekdays")
+```
+
+
+Interestingly, based on the graphic above, we notice that it seems like High School students do not get on average 8 hours of sleep during the week. So, we've decided we want to formally test this question as well. We'll perform a one samples t Test with the following hypotheses. 
+
+$$
+  H_0: \mu_\text{hours of sleep} = 8
+$$
+
+$$
+  H_a: \mu_\text{hours of sleep} \neq 8
+$$
+
+
+```{r}
+# Testing our third hypotheses (Perform a One Sample t Test):
+
+# One Sample t Test for weekdays (Both boys and girls)
+pander(t.test(HSS_Clean$Sleep_Hours_Schoolnight, mu = 8, alternative = "two.sided", conf.level = 0.95),
+       caption = "One Sample t Test of Hours of Sleep on Weekdays for High School Students")
+
+# One Sample t Test for weekends (Both boys and girls)
+pander(t.test(HSS_Clean$Sleep_Hours_Non_Schoolnight, mu = 8, alternative = "two.sided", conf.level = 0.95),
+       caption = "One Sample t Test of Hours of Sleep on Weekends for High School Students")
+```
+
+<br/>
+
+Again, the Q-Q Plots below indicate that our normality assumption has been violated though our p-values remain valid with such large sample sizes (n = 413) as per the Central Limit Theorem. 
+
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Hide Q-Q Plots
+
+## Show Q-Q Plots
+
+```{r}
+# qqPlots for One Sample t Test's normality assumptions...
+
+# qqPlot for weekends
+qqPlot(HSS_Clean$Sleep_Hours_Non_Schoolnight)
+
+# qqPlot for weekdays
+qqPlot(HSS_Clean$Sleep_Hours_Schoolnight)
+```
+
+#
+
+<br/>
+
+### Conclusion 
+
+We suggest that the data is not trustworthy and a better approach to measuring how many hours of sleep high school students get should be investigated. Although, that doesn't mean that the normality assumptions will not still be violated with better data. If large enough sample sizes are unable to be obtained (but the data is accurate) then we suggest a nonparametric alternative to the various t Tests performed. Primarily, a Wilcoxon Signed-rank test and Mann-Whiteny Rank Sum test. If the results remain the same (indicating a difference from weekends to weekdays) then investigating why this difference exists, notably why the subjects sleep more on weekends if that continues to be true, is what we ask interested researchers to do. That way, perhaps the problem can be investigated and remedied to better the future generations. 
+
+<br/><br/>

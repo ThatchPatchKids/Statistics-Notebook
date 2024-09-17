@@ -35,7 +35,60 @@ Add your own notes here...
 
 
 ```{r, eval=FALSE}
+# Permutation Testing for independent samples...
+# Create the data:
+set.seed(1140411)
+sample1 <- rnorm(30, 69, 2.5)
+sample2 <- rnorm(30, 69, 2.5)
+theData <- data.frame(values = c(sample1,sample2), group = rep(c(1,2), each=30))
+View(theData)
+boxplot(values ~ group, data = theData)
 
+# Run the permutation test:
+
+myTest <-  ...
+observedTestStat <- myTest$...
+
+observedTestStat
+
+N <- 2000      
+permutedTestStats <-  rep(NA, N)
+for  (i in 1:N ) {
+   permutedTest <- ...
+   permutedTestStats[i]  <-  permutedTest$...
+}
+hist(permutedTestStats)
+abline(v=observedTestStat)
+sum(permutedTestStats >= observedTestStat)/N
+sum(permutedTestStats <= observedTestStat)/N
+
+
+
+# Permutation testing for paired data...
+# Create the data:
+set.seed(121)
+sample1 <- rnorm(30, 185, 8)
+sample2 <- sample1 - rnorm(30, 0, 3.5)
+theData <- data.frame(values = c(sample1,sample2), group = rep(c(1,2), each=30), id = rep(c(1:30),times=2))
+View(theData)
+with(theData, hist(values[group==1] - values[group==2]))
+
+# Perform the permutation test:
+
+myTest <-  ...
+observedTestStat <- myTest$...
+
+N <- 2000      
+permutedTestStats <-  rep(NA, N)
+for  (i in 1:N ) {
+   permutedData <- ...
+   permutedTest <- ...
+   permutedTestStats[i]  <-  permutedTest$...
+}
+hist(permutedTestStats)
+abline(v=observedTestStat)
+sum(permutedTestStats >= observedTestStat)/N
+sum(permutedTestStats <= observedTestStat)/N
 ```
 
 

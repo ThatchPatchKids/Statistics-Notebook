@@ -1,0 +1,47 @@
+---
+title: "Predicting the Weather"
+author: "Thatcher Albiston"
+date: "2024-09-16"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+---
+
+```{r}
+# Necessary libraries:
+library(tidyverse)
+library(mosaic)
+library(plotly)
+library(pander)
+```
+
+
+
+
+
+## Graphical Summary
+
+```{r}
+# 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

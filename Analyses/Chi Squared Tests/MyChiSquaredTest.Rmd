@@ -6,6 +6,20 @@ output:
     code_folding: hide
 ---
 
+```{r, warning=FALSE, message=FALSE}
+# Load the libraries
+library(car)
+library(mosaic)
+library(tidyverse)
+library(DT)
+library(pander)
+library(haven)
+
+# Load in the data set
+gss2021 <- read_sas("../../Data/gss2021.sas7bdat")
+```
+
+
 
 <!-- Directions
 
@@ -27,5 +41,85 @@ Come up with a chi squared test analysis of your own creation.
 
 
 ## Background
+
+There is often an ethical debate about whether, in order to achieve some end, the means by which to get there, no matter how "unethical" they seem, can be justified by the end goal. The justification of "unethical" means is supported by how positive the end goal's impact would be and thus, could be reasoned that it needs to be obtained at any cost. This paradigm can be found at many levels, at the individual level, a group level, or even at the society level. 
+
+The question we wish to answer with this study is whether people who believe that the "ends justify the means" at one level (or in one area of life) are more likely to use the same paradigm in all levels of life. To do this we will look at individuals who believe that bribes are necessary to get ahead in life and test to see if they are more likely to believe that the harmful affects of scientific research are outweighed by its benefits. 
+
+The potential flaw with this test is that it is under the assumption that those that believe that bribes are necessary to get ahead feel they (or others) should use bribes so they can get ahead. 
+
+
+### Hypotheses
+
+$$
+  H_0: \text{need bribes to get ahead and sci research outweigh harmful results are not associated}
+$$
+
+$$
+  H_a: \text{need bribes to get ahead and sci research outweigh harmful results are associated}
+$$
+
+
+### Table
+
+
+```{r}
+# Filter out the data...
+mygss2021 <- gss2021 %>% 
+  select(OPBRIBES, SCIBNFTS) %>% 
+  filter(OPBRIBES %in% c(1,2,3,4,5),
+         SCIBNFTS %in% c(1,2,3))
+
+
+
+# Create a table of counts...
+mytable <- table(gss2021$OPBRIBES, gss2021$SCIBNFTS)
+
+# Rename the rows and columns...
+rownames(mytable) <- c("Essential", "Very Important", "Fairly Important",
+                       "Not Very Important", "Not Important At All")
+colnames(mytable) <- c("Benefits Greater", "About Equal", "Harm Greater")
+
+pander(mytable)
+```
+
+
+<br/>
+
+## Analysis
+
+```{r}
+# Create a barplot of mytable
+barplot(mytable,
+        main = "Bar Plot of My Table",
+        ylab = "Counts",
+        col = c("grey60", "grey70", "grey80", "grey90", "grey100"),
+        legend = rownames(mytable),
+        beside = TRUE)
+```
+
+
+
+```{r}
+# Perform the chi-squared test...
+chis.mytable <- chisq.test(mytable)
+chis.mytable
+
+# 
+chis.mytable$expected > 5
+
+# 
+chis.mytable$residuals
+```
+
+
+<br/>
+
+## Conclusion
+
+
+
+
+<br/><br/><br/>
 
 

@@ -100,19 +100,55 @@ pander(Late)
 
 ----
 
+```{r}
+Late <- Late %>% 
+  mutate(
+    Period = case_when(
+      Week %in% c(1,2,3,4)                        ~ "Before the Fine",
+      Week %in% c(5,6,7,8,9,10,11,12,13,14,15,16) ~ "Fine Applied",
+      Week %in% c(17,18,19,20)                    ~ "Fine Removed"
+    )
+  )
+```
 
 
 ## Analysis {.tabset .tabset-fade}
 
+
 ### Hypotheses
 
 <!-- State the hypotheses for this analysis in this section. -->
+$$
+  H_0: \mu_\text{Control Group} = \mu_\text{Fine Group}
+$$
+$$
+  H_a: \text{The average number of late children differs for one Group}
+$$
 
+$$
+  H_0: \mu_\text{Before the Fine} = \mu_\text{Fine Applied} = \mu_\text{Fine Removed}
+$$
+
+$$
+  H_a: \text{The average number of late children differs for at least one Period}
+$$
+$$
+  H_0: \text{The effect of the fine on the average number of late children picked up does not depend on the Period of the study.}
+$$
+
+$$
+  H_a: \text{The effect of the fine on the average number of late children picked up changes during at least one Period of the study.}
+$$
 
 
 ### Two-way ANOVA 
 
 <!-- Show the two-way ANOVA summary output in this section. -->
+```{r}
+Late.aov <- aov(NumberofLateChildren ~ Treatment + Period + Treatment:Period, data = Late)
+pander(summary(Late.aov),
+       caption = "Fine and Period Show Significant Difference")
+```
 
 
 
@@ -121,7 +157,38 @@ pander(Late)
 
 <!-- Show the three graphics of the two-way ANOVA in this section and provide a supporting table of numerical summaries for each graphic. -->
 
+```{r}
 
+xyplot(NumberofLateChildren ~ as.factor(Treatment), data = Late, type = c("p", "a"),
+       main = "Treatment Group", xlab = "Fine vs Control", ylab = "Number of Children Picked up Late")
+
+Late %>% 
+  group_by(Treatment) %>% 
+  summarise(`Mean Children Picked up Late` = mean(NumberofLateChildren), .groups = "drop") %>% 
+  pander(caption = "Mean Late Pick-ups according to Treatment Group")
+```
+
+
+```{r}
+xyplot(NumberofLateChildren ~ as.factor(Period), data = Late, type = c("p", "a"), 
+       main = "Period", xlab = "Before, During, and After Fine", ylab = "Number of Children Picked up Late")
+Late %>% 
+  group_by(Period) %>% 
+  summarise(`Mean Children Picked up Late` = mean(NumberofLateChildren), .groups = "drop") %>% 
+  pander(caption = "Mean Late Pick-ups according to Period")
+```
+
+
+```{r}
+xyplot(NumberofLateChildren ~ as.factor(Period), data = Late, group = as.factor(Treatment), type = c("p", "a"), 
+       main = "Someting Shows Something", xlab = "Before, During, and After Fine", 
+       ylab = "Number of Children Picked up Late", col = c("firebrick", "skyblue"),
+       auto.key = list(lines = TRUE, points = FALSE, space = "top", col = c("firebrick", "skyblue")))
+Late %>% 
+group_by(Period, Treatment) %>% 
+  summarise(`Mean Children Picked up Late` = mean(NumberofLateChildren), .groups = "drop") %>% 
+  pander(caption = "Mean Late pick-ups according to Treatment and Period")
+```
 
 
 
@@ -129,11 +196,16 @@ pander(Late)
 
 <!-- Interpret the results of the study. Use specific details in your writing like mentioning the actual amount of the fine and the relative cost to babysitting. Mention the average number of late children before the fine, during the fine, and after the fine was removed. -->
 
+The study showed the opposite of what would be expected... All p-values were significant. 
+
 
 
 ### Diagnostic Plots
 
 <!-- Provide some discussion about how appropriate the ANOVA analysis was for this data. Include the residuals vs. fitted values plot and the Q-Q Plot of residuals. -->
 
+```{r}
+plot(Late.aov, which=1:2)
+```
 
 

@@ -8,12 +8,19 @@ output:
 
 ## Background
 
-Delete these words and write your own background here motivating why you are studying the weather in the following two cities that you pick.  
+Most of my life I've spent in two distinct locations, the town I was raised and the town I attend college. I was raised in Bedford, New Hampshire (A small town just outside of Manchester, NH). New Hampshire is just about as far East as you can go in the United States, second to Maine. It's also about as far North as you can go and borders Canada. I attend college in Rexburg, Idaho which is just about on the other side of the country yet with colder Winters and equally filled with snow. I'm not fond of cold (anything below freezing) weather and thus, have asked the question, how well does the MIN temperature predict the MAX temperature in both towns? We will investigate this using a "two-lines" regression model to answer this question and to compare the towns I've spent most of my life. 
 
 ```{r, warning=FALSE, message=FALSE, ev}
 library(GSODR) #run: install.packages("GSODR") 
 # to get the GSODR package. You'll need this package to pull in your weather data.
 load(system.file("extdata", "isd_history.rda", package = "GSODR"))
+
+# Necessary libraries:
+library(pander)
+library(car)
+library(mosaic)
+library(tidyverse)
+library(DT)
 ```
 
 ```{r, eval=FALSE}
@@ -27,7 +34,7 @@ View(isd_history)
 ```
 
 ```{r}
-rexburg <- get_GSOD(years = 2023, station = "726818-94194")
+rexburg <- get_GSOD(years = 2003, station = "726818-94194")
 #Run: View(rexburg)
 #To see what columns mean, go here: https://cran.r-project.org/web/packages/GSODR/vignettes/GSODR.html#appendices
 
@@ -36,13 +43,151 @@ rexburg <- get_GSOD(years = 2023, station = "726818-94194")
 #cityName1 <- get_GSOD(years = 2023, station = "yourchoice1")
 #cityName2 <- get_GSOD(years = 2023, station = "yourchoice2")
 
+manchesterNH <- get_GSOD(years = 2003, station = "743945-99999")
+
 #Finally, join your two datasets together into one dataset:
-weather <- rbind(cityName1, cityName2)
+# weather <- rbind(cityName1, cityName2)
+weather <- rbind(manchesterNH, rexburg)
 ```
 
 <!-- Now write up an analysis that studies something like how well the MIN temperature predicts the MAX temperature of the day in the two cities you selected. Of course, you are welcome to do any multiple regression you want with the data, but the recommendation would be to just run a "two-lines" model with the x=MIN, y=MAX, and color of the dots the NAME column. -->
 
 ## Analysis
 
-Delete these words and put in your multiple regression analysis here.
+</br>
+
+### The Data 
+
+The Global Surface Summary of the Day (GSOD) data set provided in the GSODR package in R will be what we'll use for this test. We have filtered out all the observations that are irrelevant for this study. The Stations chosen are from Manchester, NH and Rexburg, ID. Bedford, NH was not an option thus, Manchester (which borders Bedford) was chosen instead. The year the data were recorded are 2003. 2003 is the closest year to present date for Manchester. 
+
+```{r}
+# Create a new column where 1 = Manchester and 0 = Rexburg:
+weather2 <- weather %>% 
+  mutate(CITY = ifelse(NAME == "MANCHESTER", 1, 0))
+# View(weather2)
+
+# Display the data...
+datatable(weather2[,c("MIN", "MAX", "NAME", "STATE", "CTRY")])
+```
+
+
+### The Model 
+
+The following is modeled after the Honda Civic vs. Toyota Corolla analysis, credit: Brother Saunders.<br/>
+
+The multiple linear regression model applied to the above data gives us two regression lines, one for Manchester, and one for Rexburg. Written formally, the model is given by:
+
+$$
+  \underbrace{Y_i}_{\text{Max Temp.}} = \overbrace{\beta_0 + \beta_1 \underbrace{X_{i1}}_{\text{Min Temp.}}}^{\text{Rexburg Line}} + \overbrace{\beta_2 \underbrace{X_{i2}}_{\text{1 if Manchester}} + \beta_3 \underbrace{X_{i1} X_{i2}}_{\text{Interaction}}}^{\text{Manchester Adjustments to Line}} + \epsilon_i
+$$
+
+where $\epsilon_i\sim N(0,\sigma^2)$ and $X_{i2} = 0$ when the city is Rexburg and $X_{i2} = 1$ when the city is Manchester. 
+The model of both lines if given below:
+
+<center>
+
+| City      | Value of $X_{i2}$ | Resulting Model   |
+|-----------|-------------------|-------------------|
+| Rexburg   | $X_{i2} = 0$      | $Y_i = \beta_0 + \beta_1 X_{i1} + \epsilon_i$ |
+| Manchester| $X_{i2} = 1$      | $Y_i = (\beta_0 + \beta_2) + (\beta_1 + \beta_3) X_{i1} + \epsilon_i$ |
+
+</center>
+<br/>
+
+#### Hypotheses for the Intercepts
+
+If $\beta_2$ is zero, then the y-intercepts are the same for both cities. The y-intercepts represent the max temp when the min temp is zero (freezing temperature). This would imply that when the min temp is freezing (0 degrees Celsius) the max temp is the same for both locations. If $\beta_2$ is greater than zero, then the max temp in Manchester is warmer than the max temp in Rexburg when the min temp is zero. If $\beta_2$ is less than zero, then the max temp in Manchester is colder than the max temp in Rexburg when the min temp is zero. 
+
+$$
+  H_0: \beta_2 = 0 \quad \text{(Equal max temp when min temp = 0)} \\
+  H_a: \beta_2 \neq 0 \quad \text{(Non-equal max temp. when min temp = 0)}
+$$
+
+
+#### Hypotheses for the Slopes
+
+If $\beta_3$ is zero, then the slopes of the two lines are the same. This would imply that the relationship between the min and max temp is the same for both cities. In other words, a one unit increase in the min temp would result in the same increase in the max temp in both locations. If $\beta_3$ is not equal to zero, then the slopes of the two lines are different. This would imply that the relationships between the min and max temp differs between the two cities. In other words, a one unit increase in the min temp would result in a different increase in the max temp in one location compared to the other. 
+
+$$
+  H_0: \beta_3 = 0 \quad \text{(Equal relationship of min and max temp)} \\
+  H_a: \beta_3 \neq 0 \quad \text{(Non-equal relationship of min and max temp)}
+$$
+
+<br/> 
+
+### Results
+
+The scatterplot below of Max vs. Min Temp of Rexburg and Manchester shows that Manchester's max temp is -3.345 degrees Celsius colder than Rexburg's when the min temp for the day is 0 degrees Celsius. The plot shows that as the min temp gets warmer (increasing after freezing) Manchester's max temp is, on average colder than Rexburg's max temp. However, the plot also shows that
+
+
+```{r}
+# Plot the regression:
+
+# Perform the two-lines regression...
+weather2.lm <- lm(MAX ~ MIN + CITY + MIN:CITY, data = weather2)
+
+# Plot the data...
+plot(MAX ~ MIN, data = weather2, col = c("firebrick", "skyblue1")[as.factor(CITY)], pch = 20, 
+     main = "Temperatures Reported During the Day in \nRexburg, ID and Manchester, NH",
+     ylab = "Maximum Temperature (Celsius)",
+     xlab = "Minimum Temperature (Celsius)")
+# Add a legend...
+legend("topleft", legend = c("Rexburg", "Manchester"), bty="n", col=c("firebrick","skyblue1"), cex=0.8, title = "City", pch = 16)
+# Extract the coefficients from our regression...
+b <- coef(weather2.lm)
+# Plot the estimated regression lines...
+curve(b[1] + b[2]*x, col="firebrick", lwd=3, add=TRUE)  
+curve((b[1] + b[3]) + (b[2] + b[4])*x, col="skyblue1", lwd=3, add=TRUE) 
+
+# Find the intersection of the two lines...
+# MIN_intersect <- (b[3]) / (b[4] - b[2])
+# MAX_intersect <- b[1] + b[2]*MIN_intersect
+# The lines intersect at ( MIN_intersect, MAX_intersect )
+```
+
+
+```{r}
+# Display the results...
+pander(weather2.lm, caption = "Regression Summary Output for Max Temp. on Min Temp. According to the City")
+```
+
+```{r}
+# Predictions...
+
+predict(weather2.lm, newdata = data.frame(MIN = 0, CITY = 1))
+```
+
+
+
+### Assessing the Fit
+
+The Q-Q Plot looks good, it appears to be safe to assume normality of the error terms. 
+The Residuals vs. Fitted values Plot shows that the linearity assumption is questionable. 
+The Residuals vs. Order Plot seems to show a general trend as well possibly violating the independent errors assumption. 
+Therefore, the p-values from our test, may not be trustworthy.
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Hide Diagnostic Plots
+
+## Show Diagnostic Plots
+
+```{r}
+# Display the diagnostic plots
+par(mfrow=c(1,1))
+plot(weather2.lm, which=1)
+qqPlot(weather2.lm$residuals)
+plot(weather2.lm$residuals)
+```
+
+#
+
+
+## Conclusion
+
+It appears that we cannot trust the results of our test. However, 
+
+
+
+<br/><br/><br/>
 

@@ -84,5 +84,181 @@ datatable(Friendly, options=list(lengthMenu = c(3,10,30)))
 
 <!-- Note that your goal is to use the Friendly data to show whether or not the Meshed or Before methods have any positive benefit on memory recall. -->
 
+We will perform three Mann-Whitney Rank Sum Tests to compare each of the groups performance and test if the Meshed or Before approaches have any positive benefit on memory recall. The first two tests will be comparing the control (SFR) group against each of the treatment groups, first the Before Group, next the Meshed Group. The distribution of the control group is not identical in shape to either treatment group (see the boxplots below) therefore, we will be testing whether the treatment groups and the control group are stochastically equal. Our third and final test will compare the medians of the Before and Meshed groups (our two treatment groups), we're able to test the difference in medians between these groups since they are (approximately) identical in shape (see the boxplots below).
 
 
+<br/>
+
+Formally, the null and alternative hypotheses of our first test are written as
+$$
+  H_0: \text{the distributions are stochastically equal (control vs before)} 
+$$
+$$
+  H_a: \text{one distribution is stochastically greater than the other (control vs before)}
+$$
+
+
+Formally, the null and alternative hypotheses of our second test are written as
+$$
+  H_0: \text{the distributions are stochastically equal (control vs meshed)} 
+$$
+$$
+  H_a: \text{one distribution is stochastically greater than the other (control vs meshed)} 
+$$
+
+
+Formally, the null and alternative hypotheses of our third test are written as
+$$
+  H_0: \text{difference in medians (before - meshed)} = 0
+$$
+$$
+  H_a: \text{difference in medians (before - meshed)} \neq 0
+$$
+
+
+The significance level for this study will be set at
+$$
+  \alpha = 0.05
+$$
+
+<br/>
+
+#### Before vs Control
+
+The side-by-side dot plots with overlaid boxplots below show the distribution of data for each group (before and control).
+These graphs suggest that the before method is more effective than the control (standard free recall) method. The numerical summaries also demonstrate a higher score for each of the statistics listed below.
+
+```{r}
+# Graphical and Numerical Summaries for our first test
+
+# Filter out the control and before groups...
+Friendly.before <- Friendly %>% 
+  filter(condition != "Meshed") %>% 
+  droplevels()
+
+# Increase the size of the y-axis to create some padding above and below the plots...
+data_range <- range(Friendly.before$correct)
+yMin <- data_range[1] - 10
+yMax <- data_range[2] + 10
+
+# Create a side-by-side dotplots with boxplots overlaid...
+boxplot(correct ~ condition, data = Friendly.before, boxwex = 0.5, ylim = c(yMin, yMax),
+        col = "cadetblue1", ylab = "Words Recalled Correctly",
+        main = "Before Approach Outperforms Control Approach",
+        xlab = "Treatment Groups")
+stripchart(correct ~ condition, data = Friendly.before, method = "stack",
+           vertical = TRUE, pch = 16, col = "dodgerblue4", offset = 1, add = TRUE)
+
+# Display the numerical summaries
+Friendly.before %>% 
+  group_by(condition) %>% 
+  summarise(
+    Min = min(correct), Median = median(correct), Mean = mean(correct), 
+    max = max(correct), sd = sd(correct), `Number of Students` = n()) %>% 
+  pander(caption = "Summary of Before vs Control Scores")
+```
+
+To determine if we can reasonably infer that the before approach is better than the control's approach, we will perform a Wilcoxon (Mann-Whitney) Rank Sum Test. Ties are present in the data and therefore, an exact p-value can't be computed. A continuity correction was also necessary for this data. The p-value from this test is less than our significance level (P-value = 0.046 < 0.05) so, the data show sufficient evidence to reject the null hypothesis.
+
+```{r, warning=FALSE, message=FALSE}
+# Perform a wilcoxon test on the before and sfr groups...
+pander(wilcox.test(correct ~ condition, data = Friendly.before, mu = 0, alternative = "two.sided", conf.level = 0.95),
+       caption = "Wilcoxon Rank Sum Test of Before vs Standard Free Recall")
+```
+
+<br/>
+
+#### Meshed vs Control
+
+The following graphics suggest that, since the meshed group has higher scores than the control group, the meshed method is better. Just like with the before and control comparison, the numerical summary shows that each of the sample statistics in the meshed group are higher than the ones in the control group.
+
+```{r}
+# Graphical and Numerical Summaries for our second test
+
+# Filter out the control and meshed groups...
+Friendly.meshed <- Friendly %>% 
+  filter(condition != "Before") %>% 
+  droplevels()
+
+# Increase the size of the y-axis to create some padding above and below the plots...
+data_range <- range(Friendly.meshed$correct)
+yMin <- data_range[1] - 10
+yMax <- data_range[2] + 10
+
+# Create a side-by-side dotplots with boxplots overlaid...
+boxplot(correct ~ condition, data = Friendly.meshed, boxwex = 0.5, ylim = c(yMin, yMax),
+        col = "cadetblue1", ylab = "Words Recalled Correctly",
+        main = "Meshed Approach Outperforms Control Approach",
+        xlab = "Treatment Groups")
+stripchart(correct ~ condition, data = Friendly.meshed, method = "stack",
+           vertical = TRUE, pch = 16, col = "dodgerblue4", offset = 1, add = TRUE)
+
+# Display the numerical summaries
+Friendly.meshed %>% 
+  group_by(condition) %>% 
+  summarise(
+    Min = min(correct), Median = median(correct), Mean = mean(correct), 
+    max = max(correct), sd = sd(correct), `Number of Students` = n()) %>% 
+  pander(caption = "Summary of Meshed vs Control Scores")
+```
+
+To determine if we can reasonably infer these conclusions, we will perform a Wilcoxon (Mann-Whitney) Rank Sum Test. This data also contained ties and a continuity correction was applied so, we cannot compute an exact p-value. We cannot reject the null hypothesis as our p-value is greater than our significance level (p-value = 0.102 > 0.05) therefore, there is insufficient evidence to reject the null. 
+
+```{r, warning=FALSE, message=FALSE}
+# Perform a Wilcoxon test on meshed vs control
+pander(wilcox.test(correct ~ condition, data = Friendly.meshed, mu = 0, alternative = "two.sided", conf.level = 0.95),
+       caption = "Wilcoxon Rank Sum Test of Meshed vs Standard Free Recall")
+```
+
+<br/>
+
+#### Before vs Meshed
+
+The final graphics below compare the distributions of the before groups scores and the meshed groups scores. The distributions look awfully close although the medians differ slightly. The summary statistics listed below also do not give a clear direciton as to which may be a better approach than the other. 
+
+```{r}
+# Graphical and Numerical Summaries for our third test
+
+# Filter out the meshed and before groups...
+Friendly.treatments <- Friendly %>% 
+  filter(condition != "SFR") %>% 
+  droplevels()
+
+# Increase the size of the y-axis to create some padding above and below the plots...
+data_range <- range(Friendly.treatments$correct)
+yMin <- data_range[1] - 10
+yMax <- data_range[2] + 10
+
+# Create a side-by-side dotplots with boxplots overlaid...
+boxplot(correct ~ condition, data = Friendly.treatments, boxwex = 0.5, ylim = c(yMin, yMax),
+        col = "cadetblue1", ylab = "Words Recalled Correctly",
+        main = "Before and Meshed Show Similar Performance",
+        xlab = "Treatment Groups")
+stripchart(correct ~ condition, data = Friendly.treatments, method = "stack",
+           vertical = TRUE, pch = 16, col = "dodgerblue4", offset = 1, add = TRUE)
+
+# Display the numerical summaries
+Friendly.treatments %>% 
+  group_by(condition) %>% 
+  summarise(
+    Min = min(correct), Median = median(correct), Mean = mean(correct), 
+    max = max(correct), sd = sd(correct), `Number of Students` = n()) %>% 
+  pander(caption = "Summary of Before vs Meshed Scores")
+```
+
+Although the distributions appear to be very similar, we will perform a Wilcoxon (Mann-Whiteny) Rank Sum Test to verify that we can infer this about the two distributions, especially considering that the outcomes of the previous two tests were not the same. Again, ties are present in the data and a continuity correction was applied, we could not compute an exact p-value. Our p-value is greater than our significance level (p-value = 0.378 > 0.05) so, we fail to reject the null hypothesis. In other words, there is insufficient evidence to conclude that a difference in the medians between the before and meshed groups can be inferred for the general population.
+
+```{r, warning=FALSE, message=FALSE}
+# Perform a Wilcoxon test on the meshed and before groups...
+pander(wilcox.test(correct ~ condition, data = Friendly.treatments, mu = 0, alternative = "two.sided", conf.level = 0.95),
+       caption = "Wilcoxon Rank Sum Test of Before vs Meshed")
+```
+
+<br/>
+
+## Interpretation
+
+The results of these tests are very interesting. The before group made a significantly positive improvement on memory recall as compared to the control group however, the meshed did not. Although, interestingly, the Meshed Groups median score of 36.5 is closer to the Before Groups of 39 than it is to the Control Groups of 27. Our third test is what makes this result the most interesting. There was no significant difference between the Meshed and Before groups (p-value = 0.378 > 0.05). Therefore we lack sufficient evidence to conclude that one is better than the other! The Before vs Meshed boxplots also show that the data in the Meshed Group is packed more closely around the median with a standard deviation of 3.03 while the Before Group's data is a little more spread out with a standard deviation of 5.34 thus suggesting that the Meshed Group may yield more consistent results. Perhaps this is irrelevant given the samples are skewed and small in size. So, how do we interpret these results? It appears that we can safely conclude that the before approach will have a positive impact on students memory recall and could be used instead of the control's approach. Also, seeing as the results were not completely clear in regards to the meshed and control approaches, our suggestions is that more data need to be collected to attempt to draw a more clear conclusion about those approaches impact on memory recall.
+
+
+<br/><br/><br/>

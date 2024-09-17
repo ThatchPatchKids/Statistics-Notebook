@@ -14,7 +14,9 @@ output:
 library(mosaic)
 library(tidyverse)
 library(pander)
-library(DT) # If you get an error stating: 
+library(DT)
+library(plotly)
+            # If you get an error stating: 
             # Error in library(DT): there is no package called 'DT'
             # You will need to run: install.packages("DT") 
             # in your Console, then try "Knit HTML" again.
@@ -33,27 +35,175 @@ Stephanie[^1] is a student that will be starting school at BYU-Idaho next semest
 
 ----
 
-Write your response to Stephanie below. Use the "Rent" dataset, good statistical analysis, and clear writing to make some well supported suggestions to her about apartments that meet her stated criterions. You are free to use other criterion that you think she might find more meaningful as well.
+<!-- Write your response to Stephanie below. Use the "Rent" dataset, good statistical analysis, and clear writing to make some well supported suggestions to her about apartments that meet her stated criterions. You are free to use other criterion that you think she might find more meaningful as well. -->
 
 ## Response
 
 Dear Stephanie,
 
-Write your response here... (delete this line).
+I'm glad you're coming to BYUI! Finding housing can be stressful, but there's plenty of options. I can help you find a place that is close to campus, around $300 a month, and has many residents. In fact, I believe I've found some great options that meet your criteria. I would like to clarify with you what the high-end of your price range may be. I've assumed that anything less than \$400 a month should work. I've also looked at the distances from campus and it can be hard to tell how far is far! So, I've assumed anything that is further than 10 minutes walking is too far. Let me know what your thoughts are and if my recommendations work for you.
 
+<br />
+
+### Womens Approved Housing in Rexburg Idaho
+
+The following table contains all 54 BYUI approved womens housing, if you'd like to look through all the available options, then you can below. On the left of each row there is a triangle that looks like a play button. Click that button to see additional information on that apartment complex. You can also search at the top for a specific complex you want to learn more about. There are also numbers below the table that allow you to move through the available options.  
+
+<!--  Describe the features of the table to Stephanie so that she knows how to use it. 
+      provide a few sentences after the headers, before the table. -->
 
 <!-- Hint, you should probably subset the Rent dataset to only show the "Approved Women's Housing" since Stephanie won't be interested in Male Housing options. Notice how this text in green doesn't show up in the HTML output because we used the HTML comment tags around this text. --> 
 
-```{r}
-# Code to get you started, be sure to use a subset of Rent instead of Rent in this code though.
-datatable(Rent, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
+```{r, message=FALSE, warning=FALSE}
+# Filter out all approved womens housing.
+ApprovedWomensHousing <- filter(
+  Rent, 
+  Gender == "F"
+)
+
+# Display the data table with the options for womens housing.
+datatable(ApprovedWomensHousing, options=list(lengthMenu = c(3,10,30)), extensions="Responsive")
 ```
 
 
+<br />
+
+### Complexes Under $350 a Month
+
+Here is a list of the 13 Complexes that I believe are in your price range. The monthly cost of each of these will be less than $350. Click the "Show entries" drop-down menu to see more apartments at once.
+
+
+```{r, message=FALSE, warning=FALSE}
+# A new data set where the monthly cost is less than 400.
+StephPriceRange <- filter(ApprovedWomensHousing, (AvgFloorPlanCost / 3) < 400)
+
+
+# Add 4 new columns: 
+#   ParkingToResidentsRatio : A ratio of parking spaces to residents (x:1 where x = parking spaces)
+#   EnoughParking           : Label each row "Enough Parking" if above ratio is x:1 where x >= 1 or "Not Enough Parking" if x < 1
+#   AvgPricePerMonth        : The monthly cost of the complexes (based on their average cost of living)
+#   TimeToCampus            : The time it takes to get to the MC (Assuming a pace of 60 meters per minute)
+
+# UPDATED CODE (NOTE: La Jolla is now labeled "Not Enough Parking" but the ratio displays "1:1", could be because of rounding.):
+StephPriceRange <- StephPriceRange %>% 
+  mutate(ParkingToResidentsRatio = ParkingSpaces / Residents, 
+         EnoughParking           = ifelse(ParkingToResidentsRatio >= 1, "Enough Parking", "Not Enough Parking"), 
+         ParkingToResidentsRatio = paste (round(ParkingToResidentsRatio, 1), ":", 1, sep=""), 
+         AvgPricePerMonth        = round (AvgFloorPlanCost / 3, 2), 
+         TimeToCampus            = round (CrowFlyMetersToMC / 60, 1))
+
+# OLD CODE: 
+# StephPriceRange <- StephPriceRange %>%
+#   mutate(ParkingToResidentsRatio = paste(round(ParkingSpaces / Residents, 1), ":", 1, sep=""),
+#          AvgPricePerMonth = round(AvgFloorPlanCost / 3, 2),
+#          TimeToCampus = round(CrowFlyMetersToMC / 60, 1))
+
+# Display the new data frame: 
+datatable(
+  select(
+    StephPriceRange, 
+    # Select only the following columns to be displayed:
+    c(Name, Address, Phone, AvgPricePerMonth, Residents, TimeToCampus, ParkingToResidentsRatio)), 
+  # Add (Minutes) to the TimeToCampus label for clarity. 
+  colnames   = c('TimeToCampus (Minutes)' = 'TimeToCampus'), options=list(lengthMenu = c(3,7,13)),
+  extensions = "Responsive")
+
+```
+
+<br />
+
+### Parking, People, Price, Proximity
+
+I know you want to live somewhere where there's a lot of people nearby. The following graph shows All the apartments in your price range. The dots are not all the same size, larger dots mean there are more residents at that complex. Hover over the dots to see exactly how many. The dots also appear in two colors. The red dots are complexes that have at least 1 parking spot per resident, if not more. The blue do not have enough parking spots for every resident present in the complex. 
+
+
+```{r, message=FALSE, warning=FALSE}
+# Create a scatterplot.
+
+# UPDATED CODE:
+plot_ly(StephPriceRange,
+        x     = ~AvgFloorPlanCost,
+        y     = ~CrowFlyMetersToMC,
+        color = ~EnoughParking,
+        size  = ~Residents,
+        text  = ~paste0("Name: "         , Name,         "\n", 
+                        "Minutes: "      , TimeToCampus, "\n",
+                        "Residents: "    , Residents,    "\n",
+                        "Monthly Cost: $", AvgPricePerMonth) ,
+        
+        # Set the colors for the two dot categories
+        colors = c("brown1", "dodgerblue")) %>%
+  layout(
+    
+    # Add a title and increase the font size
+    title  = list(
+      text = "BYUI Approved Womens Housing",
+      font = list(size = 18)),
+    
+    # Add an X-label and increase the font size
+    xaxis       = list(
+      title     = "Average Cost Per Apartment Complex",
+      titlefont = list(size = 18)),
+    
+    # Add a Y-label and increase the font size
+    yaxis       = list(
+      title     = "Distance to Campus (The MC)",
+      titlefont = list(size = 18)))
+
+# OLD CODE:
+# plotly::plot_ly(StephPriceRange,
+#                 x= ~AvgFloorPlanCost,
+#                 y= ~CrowFlyMetersToMC,
+#                 # Change the color of the dots to show apartments with at least enough parking spaces per     
+#                 # resident. I.e. a ratio of x:1 where x >= 1.
+#                 color= ~sapply(
+#                   # Split the strings "x:1" by the colon, ":".
+#                   strsplit(as.character(StephPriceRange$ParkingToResidentsRatio), ":"),
+#                   # Turn the first number (before the ":") into a double and then compare against 1.
+#                   # If greater than or equal to 1, label: Enough Parking. Otherwise: Not Enough Parking.
+#                   function(x) if_else(as.numeric(x[1]) >= 1, "Enough Parking", "Not Enough Parking")),
+#                 # Size of the dots are based on amount of Residents in the complex.
+#                 size= ~Residents,
+#                 # Info for the popups when hovering over a dot:
+#                 # (I chose paste0() so that there's no space between '$' and the price)
+#                 text= ~paste0("Name: ", Name, "\n", 
+#                               "Minutes: ", TimeToCampus, "\n", 
+#                               "Residents: ", Residents, "\n", 
+#                               "Monthly Cost: $", AvgPricePerMonth),
+#                 # Set the colors for the two dot categories
+#                 colors=c("brown1", "dodgerblue")) %>% 
+#   plotly::layout(
+#     # Add a title and increase the font size
+#     title=list(
+#       text="BYUI Approved Womens Housing",
+#       font=list(size = 18)),
+#     # Add an X-label and increase the font size
+#     xaxis=list(
+#       title="Average Cost Per Apartment Complex",
+#       titlefont = list(size = 18)),
+#     # Add a Y-label and increase the font size
+#     yaxis=list(
+#       title="Distance to Campus (The MC)",
+#       titlefont = list(size = 18)))
+```
+
+<br />
+
+## Conclusion
+
+
+My suggestion to you is [Royal Crest](WWW.ROYALCRESTAPARTMENTS.COM). The monthly price is only about $330 and out of the complexes in your price range, it has the most amount of residents. It's not too far from campus either (only 7.1 minutes walking). If you need parking I suggest you buy a contract as soon as possible, otherwise it may be difficult to find parking. 
 
 
 
+If you want a place with enough parking I would then suggest [The Pines](pineshousing.com). It's further from campus (about 10.2 minutes walking) and has only 126 residents but it's only \$298 a month!
 
+
+I hope this helps and good luck with your first semester!
+
+Sincerely,
+<br />
+Anonymous
 
 
 

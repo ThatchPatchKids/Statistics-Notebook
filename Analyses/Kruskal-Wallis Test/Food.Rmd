@@ -15,7 +15,8 @@ library(car)
 library(DT)
 library(pander)
 library(readr)
-food <- read_csv("food.csv") #food.csv is in the Data folder...
+library(tidyverse)
+food <- read_csv("../../Data/food.csv") #food.csv is in the Data folder...
 ```
 
 
@@ -429,16 +430,124 @@ If you want to give your critiquers some ideas about what you have questions on 
 
 ## Background
 
+Disney's Tangled released in 2010, I was only 10 or 11 years old. The film featured the song "Mother knows best", which, characteristic of many of Disney's songs, was quite catchy to sing a long to. My mother always used the phrase (and still does) "Mother knows best" (and she really does) long before we watched the film, thus after it's release, the song quickly became a favorite of hers.
+
+<br/> 
+
+Given this unique data set (food) we can perhaps gain some insight into the one of the affects mothers have on their children. Our variable of interest for this study is students GPA, and they will be separated into groups based on their mothers level of education. The levels of education are separated as follows: <br/>
+1 - less than high school <br/>
+2 - high school degree <br/>
+3 - some college degree <br/>
+4 - college degree <br/>
+5 - graduate degree <br/>
+
+The study is asking whether students whose mothers sought higher levels of education have higher GPA's than students whose mothers did not (or were not able to) seek higher levels of education. 
+
+We filtered the food data so that all missing values in the GPA and mother_education columns were removed. We also removed any GPA variables that were "non-numeric", in other words "Private" or "Unknown" were the keywords. This way only numeric GPA's remained so that we could convert the data into a numeric data-type for this test.
+
+
+# {.tabset .tabset-fade .tabset-pills}
+
+## Hide Data
+
+## Show Data
+
+```{r}
+# Filter out NA's and non-numeric values in the GPA and mother_education columns...
+food.mothers.GPA <- food %>% 
+  filter(!is.na(mother_education)) %>% 
+  filter(!is.na(GPA) & GPA != "Personal" & GPA != "Unknown") %>% 
+  mutate(GPA = as.numeric(GPA))
+
+# Display the data
+datatable(food.mothers.GPA[,c("GPA", "mother_education")],
+          options = list(lengthMenu = c(5, 10, 15)))
+```
+
+# 
+
+
+<br/>
+
+
+## Analysis
+
+The following boxplots suggest that mothers without a high school diploma may be more likely to have children with lower GPA's. However, the third and fourth quartiles stretch very high, in fact, they stretch as high as the GPA's across all other groups. This is an interesting observation. Perhaps within our data a mother's level of education can have an impact on their children's GPA at level 1 (Less than high school). A dot plot overlays the first boxplot showing the sample size of that group (5). It is by far the smallest sample size among the groups, this could also be reason for the appearance of our side-by-side boxplots. However, we wish to formally test these assumptions. We will perform a Kruskal-Wallis test to determine if at least one of the distributions is different than the rest. 
+
+
+```{r}
+# Change the spacing of the x and y labels / titles
+# mgp = c(xlab/ylab, x-/y-axis labels, x-/y-axis facing in = 0/out = 1)
+par(mgp=c(3,1.6,0))
+
+# Display side-by-side boxplots of each group...
+boxplot(GPA ~ mother_education, data = food.mothers.GPA, 
+        names    = c("Less Than \n High school", "High \n School", "Some \n College", "College \n Degree", "Graduate \n Degree"),
+        col      = c("darkslategray1", "darkslategray1", "darkslategray1", "darkslategray1", "darkslategray1"),
+        xlab     = "Levels of Mother's Education",
+        ylab     = "Student's GPA's",
+        main     = "Mothers With a HS Diploma Appear to Have \nSmarter Kids But Likely Only Due to Small Sample Size",
+        cex.names= 0.8)
+
+# Subset the smallest group's data for the stripchart
+subset_data <- subset(food.mothers.GPA, mother_education == 1)
+
+# Create a vector of 1's with length equal to the number of data points in subset_data
+x_coords <- rep(1, length(subset_data$GPA))
+
+# Overlay the first boxplot with the stripchart using the specified x-coordinates
+stripchart(subset_data$GPA ~ x_coords, vertical = TRUE, pch = 16, col = "black", add = TRUE)
+```
+
+<br/>
+
+The hypotheses for this test, written formally are as follows:
+
+$$
+  H_0: \text{All samples are from the same distribution}
+$$
+
+$$
+  H_a: \text{At least one samples distribution is stochastically different}
+$$
+
+These could also be interpreted as, "The GPA's of students is on average the same across all levels of their mother's education", as the null hypothesis, and "Students GPA's are different for at least one level of their mother's education", as the alternative hypothesis. 
+
+<br/>
+
+The significance level for this test will be: 
+
+$$
+  \alpha = 0.05
+$$
 
 
 
+```{r}
+# Perform the test and display the results...
+pander(kruskal.test(GPA ~ mother_education, data = food.mothers.GPA),
+       caption = "Kruskal-Wallis Test of Stochastic Dominance")
+```
+
+The P-value of this test (0.4336) is very large. Thus, we fail to reject the null hypothesis (p-val. = 0.4336 > 0.05) because there is insufficient evidence to conclude that the level of a mother's education has an effect on students GPA's. Or, in other words, Students GPA's do not differ on average, across the different levels of their mother's education. 
+
+<br/>
+
+```{r}
+# Display the numerical summaries of our data...
+favstats(GPA ~ mother_education, data = food.mothers.GPA) %>% 
+  pander(caption = "Students GPA Summaries by Mother's Education Level")
+```
+
+It's interesting to note the difference in Group 1's First Quartile (2.4) and Median (2.71) GPA's compared to all the other groups. The Third Quartile and the Max GPA's are fairly close or the same across all levels. 
+
+<br/>
 
 
+## Interpretation
+
+The results of our test suggest that a mothers level education is not sufficient information to determine the GPA's of students (their children). However, the one group that appears to be different (Mothers without a HS diploma) could be due to the small sample size (only n = 5) or even due to chance. Because of this we are unable to determine whether all groups belong to the same distribution or if one really differs. With better data we could perform the test again and see if we find any significant results that would then warrant further action.  
 
 
-
-
-
-
-
+<br/><br/><br/>
 
